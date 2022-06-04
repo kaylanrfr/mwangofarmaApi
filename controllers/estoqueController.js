@@ -15,11 +15,10 @@ module.exports = {
         var hash = crypto.createHash('sha256');
 
 
-        if (req.headers.authorization) {
+        try {
+            const farmaciaLogado = new Farmacia(jwt.verify(req.headers.authorization, constantes.env.JWT_KEY).usuario.farmacias[0]);
             try {
                 //    const usuario = new Usuario(jwt.verify(req.headers.authorization, constantes.env.JWT_KEY).funcionario);
-                const farmaciaLogado = new Farmacia(jwt.verify(req.headers.authorization, constantes.env.JWT_KEY).usuario.farmacias[0]);
-
 
                 const farmacia = await Farmacia.findAll({
                     where: {
@@ -44,24 +43,31 @@ module.exports = {
                 });
             }
             catch (err) {
-                res.sendStatus(401);
+                res.status(200).send({
+                    mensagem: 'Erro ao localizar estoque ',
+                });
             }
         }
-
-        else {
-            res.status(401).send({ mensagem: 'Token inválido' });
+        catch (err) {
+            res.status(401).send({
+                mensagem: 'Não autenticado',
+            });
         }
     }),
+
+
+
     buscarCodigo: (async (req, res) => {
         res.set('Content-Type', 'application/json');
         var hash = crypto.createHash('sha256');
 
 
-        if (req.headers.authorization) {
+
+        try {
+            const farmaciaLogado = new Farmacia(jwt.verify(req.headers.authorization, constantes.env.JWT_KEY).usuario.farmacias[0]);
+
             try {
                 //    const usuario = new Usuario(jwt.verify(req.headers.authorization, constantes.env.JWT_KEY).funcionario);
-                const farmaciaLogado = new Farmacia(jwt.verify(req.headers.authorization, constantes.env.JWT_KEY).usuario.farmacias[0]);
-
 
                 const farmacia = await Farmacia.findAll({
                     where: {
@@ -86,12 +92,15 @@ module.exports = {
                 });
             }
             catch (err) {
-                res.sendStatus(401);
+                res.status(404).send({
+                    mensagem: 'Produto não localizado',
+                });
             }
         }
-
-        else {
-            res.status(401).send({ mensagem: 'Token inválido' });
+        catch (err) {
+            res.status(401).send({
+                mensagem: 'Não autenticado',
+            });
         }
     }),
 
@@ -103,11 +112,12 @@ module.exports = {
         res.set('Content-Type', 'application/json');
         var hash = crypto.createHash('sha256');
 
+        try {
+            const farmaciaLogado = new Farmacia(jwt.verify(req.headers.authorization, constantes.env.JWT_KEY).usuario.farmacias[0]);
 
-        if (req.headers.authorization) {
             const t = await database.sequelize.transaction();
             try {
-                const farmaciaLogado = new Farmacia(jwt.verify(req.headers.authorization, constantes.env.JWT_KEY).usuario.farmacias[0]);
+
 
                 const novoProduto = await Produto.create({
                     produto: req.body.produto.produto,
@@ -157,14 +167,12 @@ module.exports = {
             }
 
 
-
-
-
-
+        } catch (err) {
+            res.status(401).send({
+                mensagem: 'Não autenticado',
+            });
         }
-        else {
-            res.status(401).send({ mensagem: 'Token inválido' });
-        }
+
     })
 
 }
